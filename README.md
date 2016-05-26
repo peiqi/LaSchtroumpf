@@ -1,7 +1,7 @@
 La Schtroumpf
 ==============
 
-"un script pour le management automatique du data center"
+"un script pour le management automatique du reseau data center"
 
 
 Typical Use
