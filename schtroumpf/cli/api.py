@@ -20,7 +20,7 @@ import os
 import sys
 
 from common import logDecorator
-
+# json api to communicate with client side
 LOG = logging.getLogger(__name__)
 
 class API():
