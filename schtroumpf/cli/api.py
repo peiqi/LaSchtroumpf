@@ -19,6 +19,17 @@ import logging
 import os
 import sys
 
-from bottle import run
+from common import logDecorator
 
+LOG = logging.getLogger(__name__)
 
+class API():
+
+      @logDecorator.log
+      def __init__(self):
+          LOG.debug("testing, testing, testing ")
+     
+      @classmethod
+      def _print():
+          LOG.debug("xxxxxxxxx")
+          print "xxxxxxxxxxxxx"
