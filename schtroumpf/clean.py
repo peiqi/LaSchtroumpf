@@ -16,6 +16,10 @@ class Cleaner(object):
         self.PROJECT_ID = os.environ.get('OS_PROJECT_ID', 'empty project id!')
         self.URL = os.environ.get('OS_AUTH_URL', 'http://127.0.0.1:5000/v2.0')
 
+        self.neutron = net_client.Client(username=self.USER,
+                                    password=self.PASS,
+                                    tenant_id=self.PROJECT_ID,
+                                    auth_url=self.URL)
     def nova_cl(self, *args):
         loader = loading.get_plugin_loader('password')
         auth = loader.load_from_options(auth_url=self.URL,
@@ -38,17 +42,30 @@ class Cleaner(object):
         print "the server_list at end is %s" % server_list_end
 
     def neutron_cl(self, *args):
-        neutron = net_client.Client(username=self.USER,
-                                    password=self.PASS,
-                                    tenant_id=self.PROJECT_ID,
-                                    auth_url=self.URL)
-
         nets = neutron.list_networks()
         for n in nets["networks"]:
-            if n["id"] not in args:
+            if n["name"] not in args:
+                print "network is %s" % nets
+                #for router_id in n["router_id"]:
+                    #print "router id is %s" % router_id
+                for subnet_id in n["subnets"]:
+                    ports = neutron.list_ports(subnet_id)
+                    for port in ports["ports"]:
+                        neutron.delete_port(port["id"])
+                    neutron.delete_subnet(subnet_id)
+                
                 neutron.delete_network(n["id"])
+ 
+    def dissociate_fip(self, *args):
+        fip_lists = self.neutron.list_floatingips()["floatingips"]
+        for fip in fip_lists:
+            if fip["port_id"] in args:
+                self.neutron.delete_floatingips(fip["port_id"])
+
+    def router_cl(self, *args):
+        pass
 
 if __name__ == '__main__':
     cleaner = Cleaner()
     #cleaner.nova_cl(['public'])
-    cleaner.neutron_cl(['public'])
+    cleaner.dissociate_fip()
