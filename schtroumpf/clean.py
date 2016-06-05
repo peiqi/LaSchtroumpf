@@ -39,33 +39,62 @@ class Cleaner(object):
                 nova.servers.delete(ser)
             server_list_end = nova.servers.list()
 
-        print "the server_list at end is %s" % server_list_end
+        #print "the server_list at end is %s" % server_list_end
 
     def neutron_cl(self, *args):
-        nets = neutron.list_networks()
+        nets = self.neutron.list_networks()
+        router_list = self.neutron.list_routers()["routers"]
+        self.ports = self.neutron.list_ports()
         for n in nets["networks"]:
+	    # this is for exclude networks we want to keep 
             if n["name"] not in args:
-                print "network is %s" % nets
-                #for router_id in n["router_id"]:
-                    #print "router id is %s" % router_id
+		for router in router_list:
+		    print "router is %s" % router
+		    temp = router["external_gateway_info"]
+                    self.neutron.remove_gateway_router(router["id"])
+	            print "gateway router return %s" % n 
+		    #if temp["network_id"] is n["id"]:
+			 # d'abord, delete the external ports
+			 #for n in temp["external_fixed_ips"]:
+		         #    self.neutron.remove_interface_router(router["id"],
+                         #        {"subnet_id": n["subnet_id"]})
+			 # ensuite, delete the interface ports
+                    for subnet_id in n["subnets"]:
+		         self.neutron.remove_interface_router(router["id"],
+                             {"subnet_id": subnet_id})
+                    self.neutron.delete_router(router["id"])
+
                 for subnet_id in n["subnets"]:
-                    ports = neutron.list_ports(subnet_id)
-                    for port in ports["ports"]:
-                        neutron.delete_port(port["id"])
-                    neutron.delete_subnet(subnet_id)
-                
-                neutron.delete_network(n["id"])
- 
+		    port_id_list = [port["id"] for port in self.ports["ports"]]
+		    # dissociate floating ip if possible
+		    self.dissociate_fip(port_id_list)
+		    self.port_cli(subnet_id)
+                    
+		    self.neutron.delete_subnet(subnet_id)
+
+                self.neutron.delete_network(n["id"])
+
+    def port_cli(self, args):
+        #ports = self.neutron.list_ports()
+	for port in self.ports["ports"]:
+            for p in port["fixed_ips"]:
+                if p["subnet_id"] is args:
+                    self.neutron.delete_port(port["id"])
+        
     def dissociate_fip(self, *args):
         fip_lists = self.neutron.list_floatingips()["floatingips"]
         for fip in fip_lists:
             if fip["port_id"] in args:
-                self.neutron.delete_floatingips(fip["port_id"])
+                self.neutron.update_floatingips(fip["id"], 
+		                                {'floatingip': {'port_id': None}})
 
     def router_cl(self, *args):
-        pass
+        router_list = self.neutron.list_routers()["routers"]
+        for router in router_list:
+            if router["external_gateway_info"]['network_id'] not in args:
+                self.neutron.remove_gateway_router(router['id']) 
 
 if __name__ == '__main__':
     cleaner = Cleaner()
-    #cleaner.nova_cl(['public'])
-    cleaner.dissociate_fip()
+    cleaner.nova_cl()
+    cleaner.neutron_cl('public')
