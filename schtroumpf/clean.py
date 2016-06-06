@@ -43,16 +43,19 @@ class Cleaner(object):
 
     def neutron_cl(self, *args):
         nets = self.neutron.list_networks()
+        subnets = self.neutron.list_subnets()
+        print subnets
         router_list = self.neutron.list_routers()["routers"]
         self.ports = self.neutron.list_ports()
         for n in nets["networks"]:
+	    print n 
 	    # this is for exclude networks we want to keep 
             if n["name"] not in args:
 		for router in router_list:
 		    print "router is %s" % router
 		    temp = router["external_gateway_info"]
                     self.neutron.remove_gateway_router(router["id"])
-	            print "gateway router return %s" % n 
+	            #print "gateway router return %s" % n 
 		    #if temp["network_id"] is n["id"]:
 			 # d'abord, delete the external ports
 			 #for n in temp["external_fixed_ips"]:
