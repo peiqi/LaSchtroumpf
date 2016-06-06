@@ -1,3 +1,0 @@
-version: K.1.0
-- NEW: added QoS feature for floating ip. (ZHAO YI)
-
