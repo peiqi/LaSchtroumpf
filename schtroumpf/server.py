@@ -20,22 +20,24 @@ def runcommand(command):
                                stderr=subprocess.STDOUT)
     output = []
     while True:
-        tmpline = process.stdout.readline().strip("\n")
+        tmpline = process.stdout.readline().strip("\n").strip(" ")
         if tmpline == '' and process.poll() is not None:
             break
-        if tmpline != '':
-            output.extend(tmpline)
+        #if tmpline != ' ':
+        else:
+            output.append(tmpline)
     exitCode = process.returncode
+    print output
 
 def laschtroumpf():
     usage = "usage: %prog [options] (see --help)"
     parser = OptionParser(usage)
     parser.add_option("--config-file", dest="configFile",
                       help="config file of LaSchtroumpf",
-                      default="/home/LaSchtroumpf/config/config.conf")
+                      default="/home/pqshi/LaSchtroumpf/config/config.conf")
     parser.add_option("--log-file", dest="logFile",
                       help="log file of LaSchtroumpf",
-                      default="/home/LaSchtroumpf/config/log.conf")
+                      default="/home/pqshi/LaSchtroumpf/config/log.conf")
     options, args = parser.parse_args()
 
     if not os.path.isfile(options.logFile):
@@ -53,5 +55,5 @@ def laschtroumpf():
 if __name__ == '__main__':
     laschtroumpf()
     instance = API()
-    print instance._print
+    #print instance._print
     runcommand("sudo ovs-vsctl show")
