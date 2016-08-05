@@ -32,8 +32,8 @@ func Reverse(head *Node) *Node {
 	tmp := current.next
 	if current != nil {
 		current.next = head
-		head = current
 		head.next = nil
+		head = current
 	}
 	for tmp != nil {
 		current = tmp
@@ -45,8 +45,8 @@ func Reverse(head *Node) *Node {
 }
 
 func main() {
-	head := Create()
-	Head := Reverse(head)
+	Head := Create()
+	//Head := Reverse(head)
 	for {
 		if Head.next != nil {
 			toprint := Head.data
