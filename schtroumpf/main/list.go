@@ -2,6 +2,8 @@ package main
 
 import (
 	. "fmt"
+	 "os"
+	 "strconv"
 )
 
 type Node struct {
@@ -9,12 +11,12 @@ type Node struct {
 	next *Node
 }
 
-func Create() *Node {
+func Create(N int) *Node {
 	// create a list of 5 nodes
 	var Head *Node = new(Node)
 	//memset(Node, 0, sizeof(*Node));
 	tmp := Head
-	for i := 0; i < 5; i++ {
+	for i := 0; i < N; i++ {
 		q := new(Node)
 		tmp.next = q
 		q.data = i
@@ -26,7 +28,7 @@ func Create() *Node {
 	return Head.next
 }
 
-func Reverse(head *Node) *Node {
+func (head *Node) Reverse() *Node {
 
 	current := head.next
 	tmp := current.next
@@ -44,9 +46,7 @@ func Reverse(head *Node) *Node {
 	return head
 }
 
-func main() {
-	Head := Create()
-	//Head := Reverse(head)
+func show(Head *Node){
 	for {
 		if Head.next != nil {
 			toprint := Head.data
@@ -58,5 +58,13 @@ func main() {
 			break
 		}
 	}
-
+}
+func main() {
+        number, _:= strconv.Atoi(os.Args[1])
+	head := Create(number)
+        Printf("the orignal list \n")
+        show(head)
+	Head := head.Reverse()
+        Printf("after changed list \n")
+        show(Head)
 }
